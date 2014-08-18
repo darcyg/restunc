@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2010 Creytiv.com
  */
-#include <string.h>
+
 #include <re.h>
 #include "stunc.h"
 
@@ -34,8 +34,8 @@ static void nat_hairpinning_handler(int err, bool supported, void *arg)
 	(void)arg;
 
 	if (err) {
-		(void)re_fprintf(stderr, "NAT Hairpinning failed: %s\n",
-				 strerror(err));
+		(void)re_fprintf(stderr, "NAT Hairpinning failed: %m\n",
+				 err);
 	}
 	else {
 		(void)re_fprintf(stderr, "NAT Hairpinning: %sSupported\n",
@@ -59,15 +59,13 @@ void natbd_do_hairpinning(void)
 	err = nat_hairpinning_alloc(&natbd.nh, natbd.srv, natbd.proto,
 				    natbd.conf, nat_hairpinning_handler, NULL);
 	if (err) {
-		DEBUG_WARNING("nat_hairpinning_alloc() failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("nat_hairpinning_alloc() failed (%m)\n", err);
 		goto err;
 	}
 
 	err = nat_hairpinning_start(natbd.nh);
 	if (err) {
-		DEBUG_WARNING("nat_hairpinning_start() failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("nat_hairpinning_start() failed (%m)\n", err);
 		goto err;
 	}
 
@@ -86,7 +84,7 @@ static void nat_mapping_handler(int err, enum nat_type type, void *arg)
 	(void)arg;
 
 	if (err) {
-		DEBUG_WARNING("NAT mapping failed (%s)\n", strerror(err));
+		DEBUG_WARNING("NAT mapping failed (%m)\n", err);
 	}
 	else {
 		(void)re_fprintf(stderr, "NAT Mapping: %s\n",
@@ -111,14 +109,12 @@ void natbd_do_mapping(void)
 				natbd.srv, natbd.proto,
 				natbd.conf, nat_mapping_handler, NULL);
 	if (err) {
-		DEBUG_WARNING("nat_mapping_alloc() failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("nat_mapping_alloc() failed (%m)\n", err);
 		goto err;
 	}
 	err = nat_mapping_start(natbd.nm);
 	if (err) {
-		DEBUG_WARNING("nat_mapping_start() failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("nat_mapping_start() failed (%m)\n", err);
 		goto err;
 	}
 
@@ -137,7 +133,7 @@ static void nat_filtering_handler(int err, enum nat_type type, void *arg)
 	(void)arg;
 
 	if (err) {
-		DEBUG_WARNING("NAT filtering failed (%s)\n", strerror(err));
+		DEBUG_WARNING("NAT filtering failed (%m)\n", err);
 	}
 	else {
 		(void)re_fprintf(stderr, "NAT Filtering: %s\n",
@@ -161,15 +157,13 @@ void natbd_do_filtering(void)
 	err = nat_filtering_alloc(&natbd.nf, natbd.srv,
 				  natbd.conf, nat_filtering_handler, NULL);
 	if (err) {
-		DEBUG_WARNING("nat_filtering_alloc() failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("nat_filtering_alloc() failed (%m)\n", err);
 		goto err;
 	}
 
 	err = nat_filtering_start(natbd.nf);
 	if (err) {
-		DEBUG_WARNING("nat_filtering_start() failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("nat_filtering_start() failed (%m)\n", err);
 		goto err;
 	}
 
@@ -191,7 +185,7 @@ static void nat_lifetime_handler(int err,
 			 interval->min, interval->cur, interval->max);
 
 	if (err) {
-		DEBUG_WARNING("nat_lifetime_handler: (%s)\n", strerror(err));
+		DEBUG_WARNING("nat_lifetime_handler: (%m)\n", err);
 		req.f.nl = false;
 		terminate_if_done();
 	}
@@ -216,15 +210,13 @@ void natbd_do_lifetime(void)
 	err = nat_lifetime_alloc(&natbd.nl, natbd.srv, 3,
 				 natbd.conf, nat_lifetime_handler, NULL);
 	if (err) {
-		DEBUG_WARNING("nat_lifetime_alloc() failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("nat_lifetime_alloc() failed (%m)\n", err);
 		goto err;
 	}
 
 	err = nat_lifetime_start(natbd.nl);
 	if (err) {
-		DEBUG_WARNING("nat_lifetime_start() failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("nat_lifetime_start() failed (%m)\n", err);
 		goto err;
 	}
 
@@ -243,8 +235,7 @@ static void nat_genalg_handler(int err, uint16_t scode, const char *reason,
 	(void)arg;
 
 	if (err) {
-		DEBUG_WARNING("Generic ALG detection failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("Generic ALG detection failed (%m)\n", err);
 		goto out;
 	}
 
@@ -274,13 +265,13 @@ void natbd_do_genalg(void)
 	err = nat_genalg_alloc(&natbd.ga, natbd.srv, natbd.proto,
 			       natbd.conf, nat_genalg_handler, NULL);
 	if (err) {
-		DEBUG_WARNING("nat_genalg_alloc: (%s)\n", strerror(err));
+		DEBUG_WARNING("nat_genalg_alloc: (%m)\n", err);
 		goto err;
 	}
 
 	err = nat_genalg_start(natbd.ga);
 	if (err) {
-		DEBUG_WARNING("nat_genalg_start: (%s)\n", strerror(err));
+		DEBUG_WARNING("nat_genalg_start: (%m)\n", err);
 		goto err;
 	}
 

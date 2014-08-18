@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2010 Creytiv.com
  */
-#include <string.h>
+
 #include <re.h>
 #include "stunc.h"
 
@@ -44,7 +44,7 @@ static void turnc_handler(int err, uint16_t scode, const char *reason,
 
 	/* Transaction errors */
 	if (err) {
-		DEBUG_WARNING("TURN Client error: %s\n", strerror(err));
+		DEBUG_WARNING("TURN Client error: %m\n", err);
 		turn_done();
 		return;
 	}
@@ -64,7 +64,7 @@ static void turnc_handler(int err, uint16_t scode, const char *reason,
 
 		err = turnc_add_chan(turnc.tc, turnc.peer, NULL, NULL);
 		if (err) {
-			DEBUG_WARNING("TURN add channel: %s\n", strerror(err));
+			DEBUG_WARNING("TURN add channel: %m\n", err);
 		}
 	}
 }
@@ -79,7 +79,7 @@ static void udp_recv(const struct sa *src, struct mbuf *mb, void *arg)
 
 	err = udp_send(turnc.loop_us, &turnc.loop_src, mb);
 	if (err) {
-		DEBUG_WARNING("udp send: %s\n", strerror(err));
+		DEBUG_WARNING("udp send: %m\n", err);
 	}
 }
 
@@ -90,8 +90,6 @@ static void udp_loop_recv(const struct sa *src, struct mbuf *mb,
 	int err;
 
 	(void)arg;
-
-	DEBUG_INFO("UDP loop from %J\n", src);
 
 	sa_cpy(&turnc.loop_src, src);
 
@@ -107,7 +105,7 @@ static void udp_loop_recv(const struct sa *src, struct mbuf *mb,
 
 	err = udp_send(turnc.us, turnc.peer, mb);
 	if (err) {
-		DEBUG_WARNING("turnc send data: %s\n", strerror(err));
+		DEBUG_WARNING("turnc send data: %m\n", err);
 	}
 }
 
@@ -123,7 +121,7 @@ int turn_init(const char *username, const char *password,
 
 	err = udp_listen(&turnc.us, NULL, udp_recv, NULL);
 	if (err) {
-		DEBUG_WARNING("udp_listen: %s\n", strerror(err));
+		DEBUG_WARNING("udp_listen: %m\n", err);
 		goto out;
 	}
 
@@ -134,7 +132,7 @@ int turn_init(const char *username, const char *password,
 
 		err = udp_listen(&turnc.loop_us, &local, udp_loop_recv, NULL);
 		if (err) {
-			DEBUG_WARNING("udp_listen: %s\n", strerror(err));
+			DEBUG_WARNING("udp_listen: %m\n", err);
 			goto out;
 		}
 		(void)re_printf("Local loop on port %u\n", loop_port);
@@ -157,7 +155,7 @@ void turn_start(const struct stun_conf *conf, int proto, const struct sa *srv,
 			  turnc.username, turnc.password, lifetime,
 			  turnc_handler, NULL);
 	if (err) {
-		DEBUG_WARNING("turnc_alloc: %s\n", strerror(err));
+		DEBUG_WARNING("turnc_alloc: %s\n", err);
 		goto err;
 	}
 

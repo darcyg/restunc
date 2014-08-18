@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2010 Creytiv.com
  */
-#include <string.h>
+
 #include <re.h>
 #include "stunc.h"
 
@@ -40,8 +40,7 @@ static void ice_gather_handler(int err, uint16_t scode, const char *reason,
 	(void)arg;
 
 	if (err) {
-		(void)re_fprintf(stderr, "gathering failed: %s\n",
-				 strerror(err));
+		(void)re_fprintf(stderr, "gathering failed: %m\n", err);
 		return;
 	}
 

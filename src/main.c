@@ -4,9 +4,6 @@
  * Copyright (C) 2010 Creytiv.com
  */
 #include <stdlib.h>
-#ifdef SOLARIS
-#define __EXTENSIONS__ 1
-#endif
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -75,7 +72,7 @@ static void mapped_addr_handler(int err, const struct sa *map, void *arg)
 	(void)arg;
 
 	if (err) {
-		DEBUG_WARNING("Mapped address error (%s)\n", strerror(err));
+		DEBUG_WARNING("Mapped address error (%m)\n", err);
 	}
 	else {
 		(void)re_fprintf(stderr, "Mapped address: %J\n", map);
@@ -96,7 +93,7 @@ static void do_bindisc(void)
 				   &stunc.srv, &stunc.conf,
 				   mapped_addr_handler, NULL);
 	if (err) {
-		DEBUG_WARNING("keepalive alloc (%s)\n", strerror(err));
+		DEBUG_WARNING("keepalive alloc (%m)\n", err);
 		goto error;
 	}
 
@@ -116,7 +113,7 @@ static void do_ice(void)
 	err = ice_test(&stunc.srv, stunc.proto,
 		       stunc.username, stunc.password);
 	if (err) {
-		DEBUG_WARNING("ICE test: %s\n", strerror(err));
+		DEBUG_WARNING("ICE test: %m\n", err);
 		req.f.ice = false;
 	}
 }
@@ -162,13 +159,13 @@ static int dns_init(void)
 
 	err = dns_srv_get(NULL, 0, nsv, &nsn);
 	if (err) {
-		DEBUG_WARNING("dns_srv_get: %s\n", strerror(err));
+		DEBUG_WARNING("dns_srv_get: %m\n", err);
 		goto out;
 	}
 
 	err = dnsc_alloc(&stunc.dnsc, NULL, nsv, nsn);
 	if (err) {
-		DEBUG_WARNING("dnsc_alloc: %s\n", strerror(err));
+		DEBUG_WARNING("dnsc_alloc: %m\n", err);
 		goto out;
 	}
 
@@ -183,7 +180,7 @@ static int stunc_init(void)
 
 	err = net_default_source_addr_get(stunc.af, &stunc.laddr);
 	if (err) {
-		DEBUG_WARNING("get source addr: %s\n", strerror(err));
+		DEBUG_WARNING("get source addr: %m\n", err);
 	}
 
 	(void)re_fprintf(stderr, "STUN client: local=%j srv=%s:%u (rto=%u)\n",
@@ -192,7 +189,7 @@ static int stunc_init(void)
 
 	err = dns_init();
 	if (err) {
-		DEBUG_WARNING("dns init failed: %s\n", strerror(err));
+		DEBUG_WARNING("dns init failed: %m\n", err);
 		goto out;
 	}
 
@@ -210,7 +207,7 @@ static int stunc_init(void)
 	return 0;
 
  out:
-	DEBUG_WARNING("stun client err (%s)\n", strerror(err));
+	DEBUG_WARNING("stun client err (%m)\n", err);
 	stunc_close();
 	return err;
 }
@@ -222,7 +219,7 @@ static int stunc_init_udp(void)
 
 	err = udp_listen(&stunc.us, NULL, udp_recv, NULL);
 	if (err) {
-		DEBUG_WARNING("udp_listen: %s\n", strerror(err));
+		DEBUG_WARNING("udp_listen: %m\n", err);
 		goto out;
 	}
 
@@ -236,8 +233,8 @@ static void stun_dns_handler(int err, const struct sa *srv, void *arg)
 	(void)arg;
 
 	if (err) {
-		DEBUG_WARNING("Could not resolve STUN server %s (%s)\n",
-			      stunc.server, strerror(err));
+		DEBUG_WARNING("Could not resolve STUN server %s (%m)\n",
+			      stunc.server, err);
 		req.flags = 0;
 		goto out;
 	}
@@ -252,8 +249,7 @@ static void stun_dns_handler(int err, const struct sa *srv, void *arg)
 	case IPPROTO_UDP:
 		err = stunc_init_udp();
 		if (err) {
-			DEBUG_WARNING("UDP init failed (%s)\n",
-				      strerror(err));
+			DEBUG_WARNING("UDP init failed (%m)\n", err);
 			goto out;
 		}
 		if (req.f.bd)
@@ -341,8 +337,7 @@ static int start_service(void)
 				   stunc.af, stunc.server, stunc.port,
 				   stun_dns_handler, NULL);
 	if (err) {
-		DEBUG_WARNING("stun_server_discover failed (%s)\n",
-			      strerror(err));
+		DEBUG_WARNING("stun_server_discover failed (%m)\n", err);
 		return err;
 	}
 
@@ -551,8 +546,8 @@ int main(int argc, char *argv[])
 
 		err = sa_decode(&stunc.peer, stunc.dest, strlen(stunc.dest));
 		if (err) {
-			DEBUG_WARNING("Could not parse %s (%s)\n",
-				      stunc.dest, strerror(err));
+			DEBUG_WARNING("Could not parse %s (%m)\n",
+				      stunc.dest, err);
 			goto out;
 		}
 	}
@@ -566,13 +561,14 @@ int main(int argc, char *argv[])
 	(void)fd_listen(STDIN_FILENO, FD_READ, stdin_handler, NULL);
 #endif
 
-	err = re_main(signal_handler);
+	(void)re_main(signal_handler);
 
  out:
-	if (err && EINTR != err) {
-		DEBUG_WARNING("main loop left with: %s\n", strerror(err));
-	}
 	stunc_close();
+
+	/* check for memory leaks */
 	mem_debug();
+	tmr_debug();
+
 	return err;
 }
