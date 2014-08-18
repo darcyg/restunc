@@ -129,26 +129,6 @@ static void udp_recv(const struct sa *src, struct mbuf *mb, void *arg)
 }
 
 
-static void stunc_close(void)
-{
-#ifndef WIN32
-	fd_close(STDIN_FILENO);
-#endif
-
-	ice_close();
-	turn_close();
-	natbd_close();
-
-	stunc.ska = mem_deref(stunc.ska);
-	stunc.us = mem_deref(stunc.us);
-
-	stunc.dns  = mem_deref(stunc.dns);
-	stunc.dnsc = mem_deref(stunc.dnsc);
-
-	libre_close();
-}
-
-
 static int dns_init(void)
 {
 	struct sa nsv[4];
@@ -208,7 +188,6 @@ static int stunc_init(void)
 
  out:
 	DEBUG_WARNING("stun client err (%m)\n", err);
-	stunc_close();
 	return err;
 }
 
@@ -567,7 +546,20 @@ int main(int argc, char *argv[])
 	(void)re_main(signal_handler);
 
  out:
-	stunc_close();
+#ifndef WIN32
+	fd_close(STDIN_FILENO);
+#endif
+
+	ice_close();
+	turn_close();
+	natbd_close();
+
+	mem_deref(stunc.ska);
+	mem_deref(stunc.us);
+	mem_deref(stunc.dns);
+	mem_deref(stunc.dnsc);
+
+	libre_close();
 
 	/* check for memory leaks */
 	mem_debug();
