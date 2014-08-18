@@ -43,7 +43,7 @@ static void nat_hairpinning_handler(int err, bool supported, void *arg)
 	}
 
 	req.f.nh = false;
-	terminate_if_done();
+	stunc_terminate_if_done();
 }
 
 
@@ -92,7 +92,7 @@ static void nat_mapping_handler(int err, enum nat_type type, void *arg)
 	}
 
 	req.f.nm = false;
-	terminate_if_done();
+	stunc_terminate_if_done();
 }
 
 
@@ -141,7 +141,7 @@ static void nat_filtering_handler(int err, enum nat_type type, void *arg)
 	}
 
 	req.f.nf = false;
-	terminate_if_done();
+	stunc_terminate_if_done();
 }
 
 
@@ -187,13 +187,13 @@ static void nat_lifetime_handler(int err,
 	if (err) {
 		DEBUG_WARNING("nat_lifetime_handler: (%m)\n", err);
 		req.f.nl = false;
-		terminate_if_done();
+		stunc_terminate_if_done();
 	}
 
 	/* terminate when values are stabilised.. */
 	if (interval->min == interval->cur) {
 		req.f.nl = false;
-		terminate_if_done();
+		stunc_terminate_if_done();
 	}
 }
 
@@ -251,7 +251,7 @@ static void nat_genalg_handler(int err, uint16_t scode, const char *reason,
  out:
 
 	req.f.ga = false;
-	terminate_if_done();
+	stunc_terminate_if_done();
 }
 
 

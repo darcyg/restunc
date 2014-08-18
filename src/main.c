@@ -55,7 +55,7 @@ static void signal_handler(int signum)
 }
 
 
-void terminate_if_done(void)
+void stunc_terminate_if_done(void)
 {
 	if (req.flags)
 		return;
@@ -79,7 +79,7 @@ static void mapped_addr_handler(int err, const struct sa *map, void *arg)
 	}
 
 	req.f.bd = false;
-	terminate_if_done();
+	stunc_terminate_if_done();
 }
 
 
@@ -293,7 +293,7 @@ static void stun_dns_handler(int err, const struct sa *srv, void *arg)
 
  out:
 	stunc.dns = mem_deref(stunc.dns);
-	terminate_if_done();
+	stunc_terminate_if_done();
 }
 
 

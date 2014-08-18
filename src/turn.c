@@ -30,7 +30,7 @@ static struct {
 static void turn_done(void)
 {
 	req.f.ar = false;
-	terminate_if_done();
+	stunc_terminate_if_done();
 }
 
 

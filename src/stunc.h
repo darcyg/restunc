@@ -36,7 +36,7 @@ union req {
 extern union req req;
 
 
-void terminate_if_done(void);
+void stunc_terminate_if_done(void);
 
 
 /*
