@@ -401,6 +401,7 @@ int main(int argc, char *argv[])
 	bool ansi = true;
 	int err = 0;
 
+	/* default values */
 	stunc.conf.rto = STUN_DEFAULT_RTO;
 	stunc.conf.rc  = STUN_DEFAULT_RC;
 	stunc.conf.rm  = STUN_DEFAULT_RM;
@@ -409,6 +410,8 @@ int main(int argc, char *argv[])
 
 	stunc.af = AF_INET;
 	stunc.lifetime = TURN_DEFAULT_LIFETIME;
+
+	stunc.proto = IPPROTO_UDP;
 
 #ifdef HAVE_GETOPT
 	for (;;) {
