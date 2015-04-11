@@ -7,8 +7,10 @@
 PROJECT	  := restunc
 VERSION   := 0.4.0
 
+ifeq ($(LIBRE_MK),)
 LIBRE_MK  := $(shell [ -f ../re/mk/re.mk ] && \
 	echo "../re/mk/re.mk")
+endif
 ifeq ($(LIBRE_MK),)
 LIBRE_MK  := $(shell [ -f /usr/share/re/re.mk ] && \
 	echo "/usr/share/re/re.mk")
