@@ -106,19 +106,6 @@ static void do_bindisc(void)
 }
 
 
-static void do_ice(void)
-{
-	int err;
-
-	err = ice_test(&stunc.srv, stunc.proto,
-		       stunc.username, stunc.password);
-	if (err) {
-		DEBUG_WARNING("ICE test: %m\n", err);
-		req.f.ice = false;
-	}
-}
-
-
 static void udp_recv(const struct sa *src, struct mbuf *mb, void *arg)
 {
 	(void)src;
@@ -246,8 +233,6 @@ static void stun_dns_handler(int err, const struct sa *srv, void *arg)
 		if (req.f.ar)
 			turn_start(&stunc.conf, stunc.proto, &stunc.srv,
 				   stunc.lifetime);
-		if (req.f.ice)
-			do_ice();
 		break;
 
 	case IPPROTO_TCP:
@@ -262,8 +247,6 @@ static void stun_dns_handler(int err, const struct sa *srv, void *arg)
 		if (req.f.ar)
 			turn_start(&stunc.conf, stunc.proto, &stunc.srv,
 				   stunc.lifetime);
-		if (req.f.ice)
-			do_ice();
 		break;
 
 	default:
@@ -282,9 +265,7 @@ static int start_service(void)
 	int err;
 
 	/* Determine which service to use */
-	if (req.f.ice)
-		service = stun_usage_binding;
-	else if (req.f.ar)
+	if (req.f.ar)
 		service = stun_usage_relay;
 	else if (req.f.bd)
 		service = stun_usage_binding;
@@ -324,22 +305,6 @@ static int start_service(void)
 }
 
 
-#ifndef WIN32
-static void stdin_handler(int flags, void *arg)
-{
-	(void)arg;
-
-	if (!(flags & FD_READ))
-		return;
-
-	(void)getchar();
-
-	if (req.f.ice)
-		ice_test_debug();
-}
-#endif
-
-
 #ifdef HAVE_GETOPT
 static void usage(void)
 {
@@ -369,8 +334,6 @@ static void usage(void)
 	(void)re_fprintf(stderr, "\t-D <dest>  Destination (ip:port)\n");
 	(void)re_fprintf(stderr, "\t-L <sec>   Lifetime in [sec]\n");
 	(void)re_fprintf(stderr, "\t-O <port>  Local loop port\n");
-	(void)re_fprintf(stderr, "\nICE options:\n");
-	(void)re_fprintf(stderr, "\t-I         Do ICE test\n");
 }
 #endif
 
@@ -461,10 +424,6 @@ int main(int argc, char *argv[])
 			req.f.ar = true;
 			break;
 
-		case 'I':
-			req.f.ice = true;
-			break;
-
 		case 'U':
 			stunc.username = optarg;
 			break;
@@ -510,6 +469,11 @@ int main(int argc, char *argv[])
 	req.f.ga = true;
 #endif
 
+	if (!req.flags) {
+		re_printf("no options specificed, using Binding Discovery.\n");
+		req.f.bd = true;
+	}
+
 	/* Initialise debugging */
 #if defined(WIN32) && !defined(CYGWIN)
 	ansi = false;
@@ -538,19 +502,9 @@ int main(int argc, char *argv[])
 	if (err)
 		goto out;
 
-#ifndef WIN32
-	/* todo: bug with mingw32/winxp - select() returns ENOENT */
-	(void)fd_listen(STDIN_FILENO, FD_READ, stdin_handler, NULL);
-#endif
-
 	(void)re_main(signal_handler);
 
  out:
-#ifndef WIN32
-	fd_close(STDIN_FILENO);
-#endif
-
-	ice_close();
 	turn_close();
 	natbd_close();
 

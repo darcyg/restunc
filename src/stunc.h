@@ -1,18 +1,8 @@
 /**
  * @file stunc.h  Interface to STUN client
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 - 2015 Creytiv.com
  */
-
-
-/*
- * ICE
- */
-
-int  ice_test(const struct sa *stun_srv, int proto,
-	      const char *username, const char *password);
-void ice_close(void);
-void ice_test_debug(void);
 
 
 /*
@@ -28,7 +18,6 @@ union req {
 		bool nl;
 		bool ga;
 		bool ar;
-		bool ice;
 	} f;
 	uint64_t flags;
 };
