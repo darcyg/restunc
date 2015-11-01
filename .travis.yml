@@ -9,4 +9,4 @@ install:
     - tar -xzf re-0.4.14.tar.gz
     - cd re-0.4.14 && make && sudo make install && cd ..
 
-script: make test
+script: make
