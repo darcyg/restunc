@@ -1,0 +1,12 @@
+language: c
+
+before_install:
+    - sudo apt-get update -qq
+
+install:
+    - sudo apt-get install -y valgrind
+    - wget "http://www.creytiv.com/pub/re-0.4.14.tar.gz"
+    - tar -xzf re-0.4.14.tar.gz
+    - cd re-0.4.14 && make && sudo make install && cd ..
+
+script: make test
